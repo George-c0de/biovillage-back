@@ -1,0 +1,26 @@
+{
+  "name": "packages/store",
+  "description": "Inventory control package for laravel",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Vadimbashirof",
+      "email": "vadimbashirof@gmail.com"
+    }
+  ],
+  "require": {},
+
+  "autoload": {
+    "psr-4": {
+      "Packages\\Store\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\Store\\StoreServiceProvider"
+      ]
+    }
+  }
+}

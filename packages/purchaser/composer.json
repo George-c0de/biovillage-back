@@ -1,0 +1,26 @@
+{
+  "name": "packages/purchaser",
+  "description": "Purchaser package for laravel",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Vadimbashirof",
+      "email": "vadimbashirof@gmail.com"
+    }
+  ],
+  "require": {},
+
+  "autoload": {
+    "psr-4": {
+      "Packages\\Purchaser\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Packages\\Purchaser\\PurchaserServiceProvider"
+      ]
+    }
+  }
+}

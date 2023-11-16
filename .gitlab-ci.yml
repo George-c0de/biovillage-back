@@ -1,0 +1,85 @@
+stages:
+  - build
+  - deploy
+  - restart
+ 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - vendor/
+    - public/
+
+build_php:
+  image: euglobalcode/deploy:u20-php7.2-node12
+  stage: build
+  script:
+    - rm -rf composer.lock
+    - composer install --no-dev
+  tags:
+    - deploy
+
+build_node:
+  image: node:12.16.1-slim
+  stage: build
+  script:
+    - npm i
+    - if [ "$CI_COMMIT_BRANCH" = "master" ]; then sed -i 's/1976D2/4B0082/' resources/assets/back/plugins/vuetify.js ; fi
+    - npm run production 
+  tags:
+    - deploy
+
+deploy_job:
+  stage: deploy
+  image: instrumentisto/rsync-ssh
+  environment: $CI_COMMIT_BRANCH
+  before_script:
+    - mkdir -p ~/.ssh
+    - eval $(ssh-agent -s)
+    - echo "$SSH_KEY" | ssh-add -
+    - echo "$SSH_SUPER_KEY" | ssh-add -
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - export VERSION_PATH=$PROJECT_PATH/releases/$(date +"%Y%m%d%H%M%S")
+  script:
+    - echo $VERSION_PATH
+    - ssh $SSH_USER@$HOST "mkdir -p $VERSION_PATH"
+    - rsync -arz --exclude '.git/' --exclude 'node_modules/' ./ $SSH_USER@$HOST:$VERSION_PATH
+    - ssh $SSH_USER@$HOST "chmod 755 $VERSION_PATH"
+    - ssh $SSH_USER@$HOST "find $VERSION_PATH -type f -exec chmod 644 {} \;"
+    - ssh $SSH_USER@$HOST "find $VERSION_PATH -type d -exec chmod 755 {} \;"
+    - ssh $SSH_USER@$HOST "chmod +x $VERSION_PATH/artisan"
+    - scp $ENV_FILE $SSH_USER@$HOST:$VERSION_PATH/.env
+    #- ssh $SSH_USER@$HOST "ln -sf $PROJECT_PATH/shared/storage/app/public $VERSION_PATH/public/storage"
+    - ssh $SSH_USER@$HOST "rm -rf $VERSION_PATH/storage && ln -sf $PROJECT_PATH/shared/storage $VERSION_PATH/storage"
+    - ssh $SSH_USER@$HOST "rm -rf $VERSION_PATH/bootstrap/cache && ln -sf $PROJECT_PATH/shared/bootstrap/cache  $VERSION_PATH/bootstrap/cache"
+    #- ssh $SSH_USER@$HOST "cd $VERSION_PATH && composer dump-autoload --optimize"
+    - ssh $SSH_USER@$HOST "php $VERSION_PATH/artisan storage:link"
+    - ssh $SSH_USER@$HOST "php $VERSION_PATH/artisan migrate --force"
+    - ssh $SSH_USER@$HOST "php $VERSION_PATH/artisan route:cache"
+    - ssh $SSH_USER@$HOST "rm -f $PROJECT_PATH/current && ln -sf $VERSION_PATH $PROJECT_PATH/current"
+    - ssh $SSH_SUPER_USER@$HOST "sudo service php7.2-fpm restart && sudo service nginx restart"
+  tags:
+    - deploy
+
+restart_job:
+  stage: restart 
+  environment: $CI_COMMIT_BRANCH
+  image: instrumentisto/rsync-ssh
+  before_script:
+    - mkdir -p ~/.ssh
+    - eval $(ssh-agent -s)
+    - echo "$SSH_SUPER_KEY" | ssh-add -
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  script:
+    - if [ -n "$CRON_FILE" ]; then echo 1; else echo 2; fi
+    - if [ -n "$CRON_FILE" ]; then scp $CRON_FILE $SSH_SUPER_USER@$HOST:/tmp/$HOST-cron.conf; fi
+    - if [ -n "$CRON_FILE" ]; then ssh $SSH_SUPER_USER@$HOST "sudo sh -c 'mv /tmp/$HOST-cron.conf /etc/cron.d/$HOST && chown root:root /etc/cron.d/$HOST'"; fi
+    - if [ -n "$CRON_FILE" ]; then ssh $SSH_SUPER_USER@$HOST "sudo service cron restart"; fi
+    - if [ -n "$SV_FILE" ]; then scp  $SV_FILE $SSH_SUPER_USER@$HOST:/tmp/$HOST-sw.conf; fi
+    - if [ -n "$SV_FILE" ]; then ssh $SSH_SUPER_USER@$HOST "sudo sh -c 'mv /tmp/$HOST-sw.conf /etc/supervisor/conf.d/$HOST.conf && chown root:root /etc/supervisor/conf.d/$HOST.conf'"; fi
+    # - if [ -n "$SV_FILE" ]; then ssh $SSH_SUPER_USER@$HOST "sudo supervisorctl update $HOST && sudo supervisorctl restart $HOST:*"; fi 
+    - ssh $SSH_SUPER_USER@$HOST "sudo sh -c 'ls -1dt $PROJECT_PATH/releases/* | tail -n +3 | xargs rm -rf'"
+  needs:
+    - deploy_job 
+  tags:
+    - deploy
+

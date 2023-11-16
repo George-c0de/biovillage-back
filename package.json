@@ -1,0 +1,44 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "npm run development",
+        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "watch": "npm run development -- --watch",
+        "watch-poll": "npm run watch -- --watch-poll",
+        "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "prod": "npm run production",
+        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
+    },
+    "devDependencies": {
+        "@sentry/browser": "^5.30.0",
+        "@sentry/integrations": "^5.30.0",
+        "browser-sync": "^2.26.14",
+        "browser-sync-webpack-plugin": "^2.3.0",
+        "eslint": "^7.18.0",
+        "eslint-plugin-vue": "^7.5.0",
+        "resolve-url-loader": "^2.3.2",
+        "sass": "^1.32.5",
+        "sass-loader": "^7.3.1",
+        "vue": "^2.6.12",
+        "vue-loader": "^15.9.3",
+        "vue-template-compiler": "^2.6.12"
+    },
+    "dependencies": {
+        "@googlemaps/js-api-loader": "^1.11.1",
+        "axios": "^0.21.1",
+        "cross-env": "^5.2.1",
+        "filepond": "^4.23.1",
+        "filepond-plugin-file-validate-type": "^1.2.5",
+        "laravel-mix": "^4.1.4",
+        "material-design-icons-iconfont": "^6.1.0",
+        "nprogress": "^0.2.0",
+        "vue-cropperjs": "^4.1.0",
+        "vue-filepond": "^6.0.3",
+        "vue-i18n": "^8.22.4",
+        "vue-router": "^3.5.0",
+        "vuedraggable": "^2.24.3",
+        "vuetify": "^2.4.3",
+        "vuetify-loader": "1.4.1",
+        "vuex": "^3.5.1"
+    }
+}

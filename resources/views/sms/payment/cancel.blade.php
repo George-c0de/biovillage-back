@@ -1,0 +1,1 @@
+Оплата заказа была отменена. Проверьте баланс. Техподдержка BioVillage: {{$phoneSupport}}, {{$emailSupport}}

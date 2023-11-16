@@ -1,0 +1,13 @@
+@import 'variables';
+@import 'nprogress';
+
+
+// GENERAL =====================================================================
+html, body{
+    height: 100%;
+    min-width: 320px;
+}
+
+*{
+    outline: none !important;
+}

@@ -1,0 +1,6 @@
+---
+actions:
+    - name: run something
+      schedule: * * *
+      artisan_command: --sleep=3 --tries=2
+

@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+    $stagedFiles = [];
+    exec('git diff --cached --name-only', $stagedFiles);
+
+    $fixedFiles = [];
+    $badFiles = [];
+    foreach ($stagedFiles as $fileName) {
+        if (preg_match('/\.php$/', $fileName) && is_file($fileName)) {
+            exec(sprintf('php-cs-fixer --config=php_cs.cfg -q fix %s', $fileName), $output, $exitCode);
+            if ($exitCode === 1) {
+                exec('git add ' . $fileName);
+                $fixedFiles[] = $fileName;
+            }
+        }
+    }

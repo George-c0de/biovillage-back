@@ -1,0 +1,12 @@
+# Описание воркеров supervisor в yaml формате
+# Из этого описания формируется конфиг на сервере
+# Свой локальный конфиг supervisor можно сформировать самому по приведенным файлам
+
+---
+workers:
+    - name: queue-worker
+      artisan_command: --sleep=3 --tries=2
+
+    #- name: another-worker
+    #  artisan_command: noop
+
