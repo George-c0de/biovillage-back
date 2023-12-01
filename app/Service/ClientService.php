@@ -180,7 +180,7 @@ class ClientService
     public static function clearClientInfo(Client $client)
     {
         // Fill data
-        $data['avatarUrl'] = null;
+        $data['avatar'] = null;
         $data['name'] = null;
         $data['surname'] = null;
         $data['patronymic'] = null;
