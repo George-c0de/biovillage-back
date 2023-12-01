@@ -182,8 +182,6 @@ class ClientService
         // Fill data
         $data['avatar'] = null;
         $data['name'] = null;
-        $data['surname'] = null;
-        $data['patronymic'] = null;
         $data['birthday'] = null;
         $data['email'] = null;
         $data['phone'] = PhoneService::buildPhoneWithPrefix($client->phone);
