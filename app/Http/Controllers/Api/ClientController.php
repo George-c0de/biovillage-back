@@ -1,4 +1,5 @@
-<?php namespace App\Http\Controllers\Api;
+<?php
+namespace App\Http\Controllers\Api;
 
 use App\Components\Paginator;
 use App\Helpers\Notify;
@@ -58,9 +59,10 @@ class ClientController extends BaseApiController
         $validated = $request->validated();
 
         $phone = Phone::prepare($validated['phone']);
-        if(is_null($phone)) {
+        if (is_null($phone)) {
             return ResponseHelper::errorKey(
-                'phone', trans('errors.wrongPhoneNumber')
+                'phone',
+                trans('errors.wrongPhoneNumber')
             );
         }
 
@@ -68,12 +70,14 @@ class ClientController extends BaseApiController
         $code = ClientService::genSmsCode($forTest);
         $referral = $validated['referral'] ?? '';
         $encryptedString = ClientService::serializeClientData(
-            $phone, $code, $referral
+            $phone,
+            $code,
+            $referral
         );
 
         Cache::put($phone, $encryptedString, self::CACHE_LIFETIME);
 
-        if(!$forTest) {
+        if (!$forTest) {
             Notify::sendSms($phone, 'sms.sms', compact('code'));
         }
 
@@ -92,9 +96,10 @@ class ClientController extends BaseApiController
         // Get params
         $validated = $request->validated();
         $phone = Phone::prepare($validated['phone']);
-        if(is_null($phone)) {
+        if (is_null($phone)) {
             return ResponseHelper::errorKey(
-                'phone', trans('errors.wrongPhoneNumber')
+                'phone',
+                trans('errors.wrongPhoneNumber')
             );
         }
 
@@ -106,13 +111,14 @@ class ClientController extends BaseApiController
                 Response::HTTP_NOT_FOUND
             );
         }
-        list($phone, $code, $referral ) = ClientService::deserializeClientData(
+        list($phone, $code, $referral) = ClientService::deserializeClientData(
             Cache::get($phone)
         );
-        if(empty($phone)) {
-            if(is_null($phone)) {
+        if (empty($phone)) {
+            if (is_null($phone)) {
                 return ResponseHelper::errorKey(
-                    'phone', trans('errors.wrongPhoneNumber')
+                    'phone',
+                    trans('errors.wrongPhoneNumber')
                 );
             }
         }
@@ -134,16 +140,18 @@ class ClientController extends BaseApiController
 
         //
         $token = $client->createToken('clientAuthToken')->toArray();
-        if(empty($token['plainTextToken'])) {
+        if (empty($token['plainTextToken'])) {
             return ResponseHelper::error('Empty plain text token');
         }
 
-        return ResponseHelper::success(array_merge(
-            ClientService::myInfo($client, true),
-            [
-                'token' => $token['plainTextToken']
-            ]
-        ));
+        return ResponseHelper::success(
+            array_merge(
+                ClientService::myInfo($client, true),
+                [
+                    'token' => $token['plainTextToken']
+                ]
+            )
+        );
     }
 
     /**
@@ -151,11 +159,12 @@ class ClientController extends BaseApiController
      *
      * @return JsonResponse
      */
-    public function logout() {
+    public function logout()
+    {
         $client = Auth::user();
-        if(!empty($client)) {
+        if (!empty($client)) {
             $tokens = $client->tokens();
-            if(!empty($tokens)) {
+            if (!empty($tokens)) {
                 $tokens->where('id', $client->currentAccessToken()->id)
                     ->delete();
             }
@@ -167,7 +176,8 @@ class ClientController extends BaseApiController
     /**
      * Get full user info
      */
-    public function me() {
+    public function me()
+    {
         return ResponseHelper::success(
             ClientService::myInfo(Auth::user())
         );
@@ -178,7 +188,8 @@ class ClientController extends BaseApiController
      * @param UpdateRequest $request
      * @return JsonResponse
      */
-    public function update(UpdateRequest $request) {
+    public function update(UpdateRequest $request)
+    {
         return ResponseHelper::success(
             ClientService::myInfo(
                 ClientService::updateClientInfo(
@@ -195,7 +206,8 @@ class ClientController extends BaseApiController
      * @param UpdateRequest $request
      * @return JsonResponse
      */
-    public function updateViaManager(UpdateRequest $request) {
+    public function updateViaManager(UpdateRequest $request)
+    {
         return ResponseHelper::success(
             ClientService::myInfo(
                 ClientService::updateClientInfo(
@@ -208,12 +220,23 @@ class ClientController extends BaseApiController
     }
 
     /**
+     * Delete client
+     * @return JsonResponse
+     */
+    public function delete()
+    {
+        ClientService::clearClientInfo(Auth::user());
+        return ResponseHelper::ok();
+    }
+
+    /**
      * TODO: Delete it
      * Request to update birthday
      * @param UpdateBirthdayRequest $request
      * @return JsonResponse
      */
-    public function updateBirthday(UpdateBirthdayRequest $request) {
+    public function updateBirthday(UpdateBirthdayRequest $request)
+    {
         Notify::sendMail(env('NOTIFICATIONS_EMAIL'), UpdateBirthdayMail::class, [
             'clientId' => Auth::id(),
             'birthday' => $request->birthday
@@ -224,7 +247,8 @@ class ClientController extends BaseApiController
     /**
      * Delete client avatar
      */
-    public function deleteAvatar() {
+    public function deleteAvatar()
+    {
         ClientService::deleteAvatar(Auth::user());
         return ResponseHelper::ok();
     }
@@ -235,7 +259,8 @@ class ClientController extends BaseApiController
      * @return JsonResponse
      * @throws \ReflectionException
      */
-    public function list(ListRequest $request) {
+    public function list(ListRequest $request)
+    {
         $params = $request->validated();
 
         $pager = new Paginator(
@@ -259,7 +284,8 @@ class ClientController extends BaseApiController
      * @return JsonResponse
      * @throws \ReflectionException
      */
-    public function info(ShowRequest $request) {
+    public function info(ShowRequest $request)
+    {
         $validation = $request->validated();
         return ResponseHelper::success(
             ClientService::myInfo($validation['id'])
@@ -271,7 +297,8 @@ class ClientController extends BaseApiController
      * @param BonusesRequest $request
      * @return JsonResponse
      */
-    public function bonuses(BonusesRequest $request) {
+    public function bonuses(BonusesRequest $request)
+    {
         $data = $request->validated();
         $client = Client::findOrFail($data['id']);
         $client->bonuses = $request->bonuses;

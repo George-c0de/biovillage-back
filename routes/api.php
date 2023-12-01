@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
  * т.к они ищутся в `App\Http\Controllers\Api`
  */
 
-Route::prefix('v1')->group(function() {
+Route::prefix('v1')->group(function () {
 
     # Common routes
     Route::get('/login', 'PlugController@loginRoute')->middleware(['guest:api'])->name('login');
@@ -19,11 +19,11 @@ Route::prefix('v1')->group(function() {
     Route::get('/gifts', 'GiftController@publicList');
 
     # Billing routes
-    Route::post( '/billing/payment-listener', 'BillingController@paymentListener');
+    Route::post('/billing/payment-listener', 'BillingController@paymentListener');
 
 
     # Admin routes
-    Route::prefix('admin')->group(function() {
+    Route::prefix('admin')->group(function () {
 
         #Pickpoints
         Route::apiResource('pickpoints', PickpointController::class)->middleware(['auth:sanctum', 'admin']);
@@ -138,11 +138,13 @@ Route::prefix('v1')->group(function() {
 
     });
 
-    Route::prefix('client')->group(function() {
+    Route::prefix('client')->group(function () {
 
         // Client
         Route::get('/', 'ClientController@me')->middleware('auth:sanctum');
         Route::post('/', 'ClientController@update')->middleware('auth:sanctum');
+        Route::delete('/', 'ClientController@delete')->middleware('auth:sanctum');
+
         Route::post('/birthday', 'ClientController@updateBirthday')->middleware('auth:sanctum');
         Route::delete('/avatar', 'ClientController@deleteAvatar')->middleware('auth:sanctum');
 
@@ -162,40 +164,40 @@ Route::prefix('v1')->group(function() {
 
     });
 
-/*
-    // Логин для админов
-    Route::post('admin/login', 'Auth\AdminController@login')->middleware('guest:api');
-    Route::get('admin/logout', 'Auth\AdminController@logout')->middleware(['auth:sanctum', 'admin']);
-    Route::get('admin/check', 'Auth\AdminController@check')->middleware(['auth:sanctum', 'admin']);
-    // Логин для клиентов
-    Route::post('client/login', 'Auth\ClientController@login')->middleware('guest:api');
-    Route::get('client/logout', 'Auth\ClientController@logout')->middleware(['auth:sanctum', 'client']);
-    Route::get('client/check', 'Auth\ClientController@check')->middleware(['auth:sanctum', 'client']);
+    /*
+        // Логин для админов
+        Route::post('admin/login', 'Auth\AdminController@login')->middleware('guest:api');
+        Route::get('admin/logout', 'Auth\AdminController@logout')->middleware(['auth:sanctum', 'admin']);
+        Route::get('admin/check', 'Auth\AdminController@check')->middleware(['auth:sanctum', 'admin']);
+        // Логин для клиентов
+        Route::post('client/login', 'Auth\ClientController@login')->middleware('guest:api');
+        Route::get('client/logout', 'Auth\ClientController@logout')->middleware(['auth:sanctum', 'client']);
+        Route::get('client/check', 'Auth\ClientController@check')->middleware(['auth:sanctum', 'client']);
 
-    // Отправка формы обратной связи
-    Route::post('orderSend', 'MailController@send')
-        ->middleware('guest:api', 'throttle:10');
+        // Отправка формы обратной связи
+        Route::post('orderSend', 'MailController@send')
+            ->middleware('guest:api', 'throttle:10');
 
-    // Сео
-    Route::get('seo/{groupName}/{entityId}', 'SeoController@show')->middleware('guest:api');
-    Route::post('seo/{groupName}/{entityId}', 'SeoController@store')->middleware('guest:api');
-    Route::post('seo/{groupName}/{entityId}/update', 'SeoController@update')->middleware('guest:api');
-    Route::delete('seo/{groupName}/{entityId}', 'SeoController@destroy')->middleware('guest:api');
+        // Сео
+        Route::get('seo/{groupName}/{entityId}', 'SeoController@show')->middleware('guest:api');
+        Route::post('seo/{groupName}/{entityId}', 'SeoController@store')->middleware('guest:api');
+        Route::post('seo/{groupName}/{entityId}/update', 'SeoController@update')->middleware('guest:api');
+        Route::delete('seo/{groupName}/{entityId}', 'SeoController@destroy')->middleware('guest:api');
 
-    // Компоненты
-    Route::get('components', 'ComponentController@index')->middleware('guest:api');
-    Route::get('components/{slug}', 'ComponentController@show')->middleware('guest:api');
-    Route::post('components/{slug}', 'ComponentController@update')->middleware('guest:api');
-    // Коллекции компонентов
-    Route::post('components/{slug}/collection', 'ComponentCollectionController@store')->middleware('guest:api');
-    Route::post('components/{slug}/collection/{id}', 'ComponentCollectionController@update')->middleware('guest:api');
-    Route::delete('components/{slug}/collection/{id}', 'ComponentCollectionController@destroy')->middleware('guest:api');
+        // Компоненты
+        Route::get('components', 'ComponentController@index')->middleware('guest:api');
+        Route::get('components/{slug}', 'ComponentController@show')->middleware('guest:api');
+        Route::post('components/{slug}', 'ComponentController@update')->middleware('guest:api');
+        // Коллекции компонентов
+        Route::post('components/{slug}/collection', 'ComponentCollectionController@store')->middleware('guest:api');
+        Route::post('components/{slug}/collection/{id}', 'ComponentCollectionController@update')->middleware('guest:api');
+        Route::delete('components/{slug}/collection/{id}', 'ComponentCollectionController@destroy')->middleware('guest:api');
 
-    // Каталог
-    Route::get('catalog', 'CatalogController@index')->middleware('guest:api');
-    Route::get('catalog/{path}', 'CatalogController@show')
-        ->where('path', '[a-zA-Z0-9/_-]+');
-*/
+        // Каталог
+        Route::get('catalog', 'CatalogController@index')->middleware('guest:api');
+        Route::get('catalog/{path}', 'CatalogController@show')
+            ->where('path', '[a-zA-Z0-9/_-]+');
+    */
 });
 
 Route::any('{any}', 'PlugController@anyRoute');

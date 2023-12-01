@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Service;
+
 use App\Helpers\DbHelper;
 use App\Helpers\Utils;
 use App\Models\Auth\Client;
@@ -26,7 +27,8 @@ class ClientService
      * @param bool $forDebug
      * @return int|string
      */
-    public static function genSmsCode($forDebug = false) {
+    public static function genSmsCode($forDebug = false)
+    {
         return App::environment('local') || $forDebug
             ? self::DEBUG_CODE
             : rand(10000, 99999);
@@ -39,9 +41,12 @@ class ClientService
      * @param $referal
      * @return string
      */
-    public static function serializeClientData($phone, $code, $referal) {
+    public static function serializeClientData($phone, $code, $referal)
+    {
         return Crypt::encryptString(implode('|', [
-            $phone, $code, $referal
+            $phone,
+            $code,
+            $referal
         ]));
     }
 
@@ -50,12 +55,12 @@ class ClientService
      * @param $serialized
      * @return array
      */
-    public static function deserializeClientData($serialized) {
+    public static function deserializeClientData($serialized)
+    {
         try {
             $decryptedString = Crypt::decryptString($serialized);
-        }
-        catch (\Exception $e) {
-            return [ '', '', '' ];
+        } catch (\Exception $e) {
+            return ['', '', ''];
         }
 
         return explode('|', $decryptedString);
@@ -67,7 +72,8 @@ class ClientService
      * @param $referralCode
      * @return Client
      */
-    public static function createClient($phone, $referralCode) {
+    public static function createClient($phone, $referralCode)
+    {
         $client = new Client();
         $client->phone = $phone;
         $client->allowMailing = true;
@@ -82,9 +88,10 @@ class ClientService
      * @param $client
      * @param $platform - See Client::PLATFORMS
      */
-    public static function clientLogin($client, $platform) {
+    public static function clientLogin($client, $platform)
+    {
         $client->lastLoginAt = DbHelper::currTs();
-        $client->lastPlatform =  $platform ?? Client::PLATFORM_NA;
+        $client->lastPlatform = $platform ?? Client::PLATFORM_NA;
         $client->save();
     }
 
@@ -94,10 +101,11 @@ class ClientService
      * @param bool $needRefresh
      * @return array
      */
-    public static function myInfo($client, $needRefresh = false, $realBonuses = false) {
+    public static function myInfo($client, $needRefresh = false, $realBonuses = false)
+    {
 
         $client = Client::clientInstance($client);
-        if($needRefresh) {
+        if ($needRefresh) {
             $client->refresh();
         }
         $info = $client->toArray();
@@ -131,19 +139,20 @@ class ClientService
      *
      * @return mixed
      */
-    public static function updateClientInfo(Client $client, array $data = []) {
+    public static function updateClientInfo(Client $client, array $data = [])
+    {
 
         // Fill data
         $data['allowMailing'] = boolval($data['allowMailing']
             ?? $client->allowMailing);
 
-        if(!empty($data['birthday'])) {
+        if (!empty($data['birthday'])) {
             $data['birthday'] = locale()->dateToDbStr($data['birthday']);
         }
         $client->fill($data);
 
         // Save images
-        if(!empty($data['avatar'])) {
+        if (!empty($data['avatar'])) {
 
             ImageService::deleteByEntities(
                 Client::IMAGE_GROUP_NAME,
@@ -165,10 +174,39 @@ class ClientService
     }
 
     /**
+     * Очищение данных клиента
+     * @param $client
+     */
+    public static function clearClientInfo(Client $client)
+    {
+        // Fill data
+        $data['avatarUrl'] = null;
+        $data['name'] = null;
+        $data['surname'] = null;
+        $data['patronymic'] = null;
+        $data['birthday'] = null;
+        $data['email'] = null;
+        $data['phone'] = PhoneService::buildPhoneWithPrefix($client->phone);
+
+        $client->forceFill($data);
+
+        ImageService::deleteByEntities(
+            Client::IMAGE_GROUP_NAME,
+            $client->id
+        );
+        // Save all
+        $client->save();
+
+        return $client;
+    }
+
+
+    /**
      * Delete client avatar
      * @param $client
      */
-    public static function deleteAvatar($client) {
+    public static function deleteAvatar($client)
+    {
         ImageService::deleteByEntities(
             Client::IMAGE_GROUP_NAME,
             $client->id
@@ -183,7 +221,8 @@ class ClientService
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function search($params=[]) {
+    public static function search($params = [])
+    {
         $s = new ClientSearcher();
         return $s->search($params);
     }
@@ -194,10 +233,11 @@ class ClientService
      * @return mixed
      * @throws \ReflectionException
      */
-    public static function searchOne($params=[]) {
+    public static function searchOne($params = [])
+    {
         $s = new ClientSearcher();
         $res = $s->search($params);
-        if(empty($res)) {
+        if (empty($res)) {
             return null;
         }
         return $res[0];
@@ -209,7 +249,8 @@ class ClientService
      * @return int
      * @throws \ReflectionException
      */
-    public static function count($params=[]) {
+    public static function count($params = [])
+    {
         $s = new ClientSearcher();
         return $s->count($params);
     }
@@ -219,7 +260,8 @@ class ClientService
      * @param $clientId
      * @return int
      */
-    public static function invitesCount($clientId) {
+    public static function invitesCount($clientId)
+    {
         $s = new ClientSearcher();
         return $s->count(['invitedById' => $clientId]);
     }
